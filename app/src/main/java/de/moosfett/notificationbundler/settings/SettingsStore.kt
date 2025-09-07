@@ -10,6 +10,9 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 private val Context.dataStore by preferencesDataStore(
     name = "settings",
@@ -59,9 +62,16 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun addTime(time: String) {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        val formatted = try {
+            LocalTime.parse(time, formatter).format(formatter)
+        } catch (e: DateTimeParseException) {
+            throw IllegalArgumentException("Invalid time format: $time", e)
+        }
+
         context.dataStore.edit { prefs ->
             val s = prefs[Keys.TIMES]?.toMutableSet() ?: mutableSetOf()
-            s.add(time)
+            s.add(formatted)
             prefs[Keys.TIMES] = s
         }
     }
