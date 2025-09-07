@@ -6,7 +6,6 @@ import androidx.work.WorkerParameters
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
-import kotlinx.coroutines.runBlocking
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -42,13 +41,11 @@ class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWo
         return Result.success()
     }
 
-    private fun rescheduleNext() {
-        runBlocking {
-            val times = settings.getTimes()
-            val now = ZonedDateTime.now(ZoneId.systemDefault())
-            val next = Scheduling.nextRun(now, times)
-            val delay = next.toInstant().toEpochMilli() - System.currentTimeMillis()
-            Scheduling.enqueueOnce(applicationContext, delay)
-        }
+    private suspend fun rescheduleNext() {
+        val times = settings.getTimes()
+        val now = ZonedDateTime.now(ZoneId.systemDefault())
+        val next = Scheduling.nextRun(now, times)
+        val delay = next.toInstant().toEpochMilli() - System.currentTimeMillis()
+        Scheduling.enqueueOnce(applicationContext, delay)
     }
 }
