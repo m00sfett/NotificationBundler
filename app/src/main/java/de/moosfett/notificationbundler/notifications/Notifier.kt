@@ -41,8 +41,9 @@ object Notifier {
             .setContentIntent(pi)
             .setAutoCancel(true)
             .build()
-        NotificationManagerCompat.from(context).notify((System.currentTimeMillis()%100000).toInt(), n)
-        return 1
+        val id = (System.currentTimeMillis() % 100000).toInt()
+        NotificationManagerCompat.from(context).notify(id, n)
+        return id
     }
 
     fun notifyBundledSummary(context: Context, lines: List<String>): Int {
