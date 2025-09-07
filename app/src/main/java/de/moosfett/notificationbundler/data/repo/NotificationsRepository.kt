@@ -3,6 +3,9 @@ package de.moosfett.notificationbundler.data.repo
 import android.content.Context
 import de.moosfett.notificationbundler.data.db.AppDatabase
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
+import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+import java.time.ZoneId
 
 class NotificationsRepository(private val appContext: Context) {
 
@@ -17,4 +20,11 @@ class NotificationsRepository(private val appContext: Context) {
     suspend fun deleteOlderThan(threshold: Long) = db.notifications().deleteOlderThan(threshold)
 
     suspend fun seenPackages(): List<String> = db.notifications().seenPackages()
+
+    fun countToday(): Flow<Int> {
+        val zone = ZoneId.systemDefault()
+        val start = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = start + 24L * 60L * 60L * 1000L - 1
+        return db.notifications().countToday(start, end)
+    }
 }
