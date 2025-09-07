@@ -3,9 +3,13 @@ package de.moosfett.notificationbundler.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import de.moosfett.notificationbundler.work.Scheduling
-import de.moosfett.notificationbundler.work.DeliveryWorker
 import androidx.work.*
+import de.moosfett.notificationbundler.work.DeliveryWorker
+import de.moosfett.notificationbundler.work.Scheduling
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class DeliveryActionReceiver : BroadcastReceiver() {
 
@@ -22,7 +26,15 @@ class DeliveryActionReceiver : BroadcastReceiver() {
             }
             ACTION_SNOOZE_15M -> {
                 // Replace any existing with a new one in 15m
-                Scheduling.enqueueOnce(context, 15L * 60L * 1000L)
+                val pendingResult = goAsync()
+                val scope = CoroutineScope(Dispatchers.Default)
+                scope.launch {
+                    try {
+                        Scheduling.enqueueOnce(context, 15L * 60L * 1000L)
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }.invokeOnCompletion { scope.cancel() }
             }
             ACTION_SKIP -> {
                 // Do nothing; next regular run will happen
