@@ -1,5 +1,6 @@
 package de.moosfett.notificationbundler.service
 
+import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
@@ -7,6 +8,7 @@ import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.notifications.Notifier
+import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.*
 import org.json.JSONObject
 
@@ -15,11 +17,13 @@ class NotificationCollectorService : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationsRepo: NotificationsRepository
     private lateinit var filtersRepo: FiltersRepository
+    private lateinit var settings: SettingsStore
 
     override fun onCreate() {
         super.onCreate()
         notificationsRepo = NotificationsRepository(applicationContext)
         filtersRepo = FiltersRepository(applicationContext)
+        settings = SettingsStore(applicationContext)
     }
 
     override fun onDestroy() {
@@ -33,13 +37,21 @@ class NotificationCollectorService : NotificationListenerService() {
 
         scope.launch {
             val n = sbn.notification
+            val isOngoing = sbn.isOngoing
+            val importance = n.priority
+
+            val includeOngoing = settings.includeOngoing()
+            val includeLowImportance = settings.includeLowImportance()
+
+            if (!includeOngoing && isOngoing) return@launch
+            if (!includeLowImportance &&
+                (importance == Notification.PRIORITY_LOW || importance == Notification.PRIORITY_MIN)) return@launch
+
             val extras = n.extras
             val title = extras.getCharSequence("android.title")?.toString()
             val text = extras.getCharSequence("android.text")?.toString()
             val channelId = n.channelId
             val category = n.category
-            val isOngoing = sbn.isOngoing
-            val importance = n.priority
 
             val extrasJson = JSONObject().apply {
                 try {
