@@ -88,7 +88,14 @@ class NotificationCollectorService : NotificationListenerService() {
                 }
                 match?.isCritical == true -> {
                     // mirror immediately
-                    Notifier.notifyCritical(applicationContext, title, text, sbn.packageName)
+                    val sourceLabel = try {
+                        val pm = packageManager
+                        val info = pm.getApplicationInfo(sbn.packageName, 0)
+                        pm.getApplicationLabel(info).toString()
+                    } catch (_: Exception) {
+                        sbn.packageName
+                    }
+                    Notifier.notifyCritical(applicationContext, title, text, sourceLabel)
                     notificationsRepo.insert(entity.copy(critical = true, delivered = true))
                 }
                 else -> {
