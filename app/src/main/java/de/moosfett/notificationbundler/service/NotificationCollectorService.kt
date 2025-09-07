@@ -1,6 +1,6 @@
 package de.moosfett.notificationbundler.service
 
-import android.app.Notification
+import android.app.NotificationManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
@@ -18,12 +18,14 @@ class NotificationCollectorService : NotificationListenerService() {
     private lateinit var notificationsRepo: NotificationsRepository
     private lateinit var filtersRepo: FiltersRepository
     private lateinit var settings: SettingsStore
+    private lateinit var notificationManager: NotificationManager
 
     override fun onCreate() {
         super.onCreate()
         notificationsRepo = NotificationsRepository(applicationContext)
         filtersRepo = FiltersRepository(applicationContext)
         settings = SettingsStore(applicationContext)
+        notificationManager = getSystemService(NotificationManager::class.java)
     }
 
     override fun onDestroy() {
@@ -38,14 +40,17 @@ class NotificationCollectorService : NotificationListenerService() {
         scope.launch {
             val n = sbn.notification
             val isOngoing = sbn.isOngoing
-            val importance = n.priority
+            val importance = n.channelId?.let { id ->
+                notificationManager.getNotificationChannel(id)?.importance
+            } ?: NotificationManager.IMPORTANCE_DEFAULT
 
             val includeOngoing = settings.includeOngoing()
             val includeLowImportance = settings.includeLowImportance()
 
             if (!includeOngoing && isOngoing) return@launch
             if (!includeLowImportance &&
-                (importance == Notification.PRIORITY_LOW || importance == Notification.PRIORITY_MIN)) return@launch
+                (importance == NotificationManager.IMPORTANCE_LOW ||
+                 importance == NotificationManager.IMPORTANCE_MIN)) return@launch
 
             val extras = n.extras
             val title = extras.getCharSequence("android.title")?.toString()
