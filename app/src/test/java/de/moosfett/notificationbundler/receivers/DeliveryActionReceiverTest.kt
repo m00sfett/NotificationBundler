@@ -44,7 +44,7 @@ class DeliveryActionReceiverTest {
         Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
             receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SNOOZE_15M))
             scheduler.advanceUntilIdle()
-            schedStatic.verify { runBlocking { Scheduling.enqueueOnce(context, 15L * 60L * 1000L) } }
+            schedStatic.verify { Scheduling.enqueueOnce(context, 15L * 60L * 1000L) }
         }
     }
 
