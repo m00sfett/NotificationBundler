@@ -10,6 +10,7 @@ import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
 
 class NotificationCollectorService : NotificationListenerService() {
@@ -19,6 +20,7 @@ class NotificationCollectorService : NotificationListenerService() {
     private lateinit var filtersRepo: FiltersRepository
     private lateinit var settings: SettingsStore
     private lateinit var notificationManager: NotificationManager
+    private val rulesCache = MutableStateFlow<List<FilterRuleEntity>>(emptyList())
 
     override fun onCreate() {
         super.onCreate()
@@ -26,6 +28,9 @@ class NotificationCollectorService : NotificationListenerService() {
         filtersRepo = FiltersRepository(applicationContext)
         settings = SettingsStore(applicationContext)
         notificationManager = getSystemService(NotificationManager::class.java)
+        scope.launch {
+            filtersRepo.observeAll().collect { rulesCache.value = it }
+        }
     }
 
     override fun onDestroy() {
@@ -79,7 +84,7 @@ class NotificationCollectorService : NotificationListenerService() {
                 extrasJson = extrasJson
             )
 
-            val rules = filtersRepo.all()
+            val rules = rulesCache.value
             val match = matchRule(rules, entity)
 
             when {
