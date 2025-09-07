@@ -11,6 +11,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.max
 
 class TimezoneChangedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -24,7 +25,7 @@ class TimezoneChangedReceiver : BroadcastReceiver() {
                     val now = ZonedDateTime.now(ZoneId.systemDefault())
                     val next = Scheduling.nextRun(now, times)
                     val delay =
-                        next.toInstant().toEpochMilli() - System.currentTimeMillis()
+                        max(0L, next.toInstant().toEpochMilli() - System.currentTimeMillis())
                     Scheduling.enqueueOnce(context, delay)
                 } finally {
                     pendingResult.finish()
