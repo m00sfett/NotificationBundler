@@ -1,6 +1,8 @@
 package de.moosfett.notificationbundler.service
 
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
@@ -23,6 +25,7 @@ class NotificationCollectorServiceTest {
     private val notificationsRepo = mock(NotificationsRepository::class.java)
     private val filtersRepo = mock(FiltersRepository::class.java)
     private val settings = mock(SettingsStore::class.java)
+    private val notificationManager = mock(NotificationManager::class.java)
 
     @Before
     fun setup() {
@@ -30,6 +33,7 @@ class NotificationCollectorServiceTest {
         setField("notificationsRepo", notificationsRepo)
         setField("filtersRepo", filtersRepo)
         setField("settings", settings)
+        setField("notificationManager", notificationManager)
     }
 
     @Test
@@ -37,7 +41,7 @@ class NotificationCollectorServiceTest {
         Mockito.`when`(settings.includeOngoing()).thenReturn(false)
         Mockito.`when`(settings.includeLowImportance()).thenReturn(true)
 
-        val sbn = mockSbn(isOngoing = true, priority = Notification.PRIORITY_DEFAULT)
+        val sbn = mockSbn(isOngoing = true, importance = NotificationManager.IMPORTANCE_DEFAULT)
 
         service.onNotificationPosted(sbn)
 
@@ -49,14 +53,14 @@ class NotificationCollectorServiceTest {
         Mockito.`when`(settings.includeOngoing()).thenReturn(true)
         Mockito.`when`(settings.includeLowImportance()).thenReturn(false)
 
-        val sbn = mockSbn(isOngoing = false, priority = Notification.PRIORITY_LOW)
+        val sbn = mockSbn(isOngoing = false, importance = NotificationManager.IMPORTANCE_LOW)
 
         service.onNotificationPosted(sbn)
 
         verify(notificationsRepo, never()).insert(ArgumentMatchers.any(NotificationEntity::class.java))
     }
 
-    private fun mockSbn(isOngoing: Boolean, priority: Int): StatusBarNotification {
+    private fun mockSbn(isOngoing: Boolean, importance: Int): StatusBarNotification {
         val extras = Bundle().apply {
             putCharSequence("android.title", "title")
             putCharSequence("android.text", "text")
@@ -65,7 +69,8 @@ class NotificationCollectorServiceTest {
         Mockito.`when`(n.extras).thenReturn(extras)
         Mockito.`when`(n.channelId).thenReturn("chan")
         Mockito.`when`(n.category).thenReturn("cat")
-        Mockito.`when`(n.priority).thenReturn(priority)
+        val channel = NotificationChannel("chan", "chan", importance)
+        Mockito.`when`(notificationManager.getNotificationChannel("chan")).thenReturn(channel)
 
         val sbn = mock(StatusBarNotification::class.java)
         Mockito.`when`(sbn.packageName).thenReturn("pkg")
