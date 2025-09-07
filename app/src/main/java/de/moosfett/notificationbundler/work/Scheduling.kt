@@ -2,6 +2,7 @@ package de.moosfett.notificationbundler.work
 
 import android.content.Context
 import androidx.work.*
+import androidx.work.await
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -26,14 +27,15 @@ object Scheduling {
         return ZonedDateTime.of(today.plusDays(1), parsed.first(), zone)
     }
 
-    fun enqueueOnce(context: Context, delayMillis: Long) {
+    suspend fun enqueueOnce(context: Context, delayMillis: Long) {
         val wm = WorkManager.getInstance(context)
-        val existing = try { wm.getWorkInfosByTag(TAG).get() } catch (_: Exception) { emptyList() }
+        val existing = try { wm.getWorkInfosByTag(TAG).await() } catch (_: Exception) { emptyList() }
         val hasRunning = existing.any { it.state == WorkInfo.State.RUNNING }
         if (hasRunning) return
 
+        val clampedDelay = delayMillis.coerceAtLeast(0)
         val req = OneTimeWorkRequestBuilder<DeliveryWorker>()
-            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+            .setInitialDelay(clampedDelay, TimeUnit.MILLISECONDS)
             .setConstraints(Constraints.NONE)
             .addTag(TAG)
             .build()

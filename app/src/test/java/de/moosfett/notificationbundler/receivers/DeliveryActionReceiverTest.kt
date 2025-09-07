@@ -6,6 +6,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import de.moosfett.notificationbundler.work.Scheduling
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.eq
@@ -34,7 +35,8 @@ class DeliveryActionReceiverTest {
         val context = mock(Context::class.java)
         Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
             receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SNOOZE_15M))
-            schedStatic.verify { Scheduling.enqueueOnce(context, 15L * 60L * 1000L) }
+            Thread.sleep(50)
+            schedStatic.verify { runBlocking { Scheduling.enqueueOnce(context, 15L * 60L * 1000L) } }
         }
     }
 
