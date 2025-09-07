@@ -2,7 +2,6 @@ package de.moosfett.notificationbundler.data.db
 
 import androidx.room.*
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FiltersDao {
