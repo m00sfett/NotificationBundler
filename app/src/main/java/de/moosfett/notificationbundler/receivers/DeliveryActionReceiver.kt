@@ -21,7 +21,9 @@ class DeliveryActionReceiver @JvmOverloads constructor(
         when (intent.action) {
             ACTION_DELIVER_NOW -> {
                 // Enqueue an immediate run
-                val req = OneTimeWorkRequestBuilder<DeliveryWorker>().build()
+                val req = OneTimeWorkRequestBuilder<DeliveryWorker>()
+                    .addTag("delivery")
+                    .build()
                 WorkManager.getInstance(context).enqueueUniqueWork(
                     "delivery",
                     ExistingWorkPolicy.KEEP,
