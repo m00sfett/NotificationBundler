@@ -39,4 +39,18 @@ class SettingsStore(private val context: Context) {
     suspend fun setRetentionDays(days: Int) {
         context.dataStore.edit { it[Keys.RETENTION_DAYS] = days }
     }
+
+    suspend fun includeOngoing(): Boolean =
+        context.dataStore.data.map { (it[Keys.INCLUDE_ONGOING] ?: 1) == 1 }.first()
+
+    suspend fun setIncludeOngoing(include: Boolean) {
+        context.dataStore.edit { it[Keys.INCLUDE_ONGOING] = if (include) 1 else 0 }
+    }
+
+    suspend fun includeLowImportance(): Boolean =
+        context.dataStore.data.map { (it[Keys.INCLUDE_LOW_IMPORTANCE] ?: 1) == 1 }.first()
+
+    suspend fun setIncludeLowImportance(include: Boolean) {
+        context.dataStore.edit { it[Keys.INCLUDE_LOW_IMPORTANCE] = if (include) 1 else 0 }
+    }
 }
