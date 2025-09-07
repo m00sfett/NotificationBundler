@@ -15,8 +15,7 @@ class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWo
     private val settings = SettingsStore(appContext)
 
     override suspend fun doWork(): Result {
-        if (runAttemptCount > 0) return Result.success()
-        if (!running.compareAndSet(false, true)) return Result.success()
+        if (!running.compareAndSet(false, true)) return Result.retry()
 
         try {
             // 1) Query pending notifications
