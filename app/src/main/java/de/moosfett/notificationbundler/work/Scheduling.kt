@@ -6,8 +6,6 @@ import androidx.work.await
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 object Scheduling {
     private const val TAG = "delivery"
