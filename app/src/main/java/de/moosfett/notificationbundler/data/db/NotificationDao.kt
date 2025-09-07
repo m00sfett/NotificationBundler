@@ -12,8 +12,8 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE delivered = 0 AND skipped = 0 AND critical = 0 ORDER BY postTime ASC")
     suspend fun pending(): List<NotificationEntity>
 
-    @Query("SELECT COUNT(*) FROM notifications WHERE date(postTime/1000, 'unixepoch', 'localtime') = date('now', 'localtime')")
-    fun countToday(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM notifications WHERE postTime BETWEEN :start AND :end")
+    fun countToday(start: Long, end: Long): Flow<Int>
 
     @Update
     suspend fun update(e: NotificationEntity)
