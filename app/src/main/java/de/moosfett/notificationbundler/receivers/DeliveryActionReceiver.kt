@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 class DeliveryActionReceiver : BroadcastReceiver() {
 
@@ -31,7 +30,7 @@ class DeliveryActionReceiver : BroadcastReceiver() {
                 val scope = CoroutineScope(Dispatchers.Default)
                 scope.launch {
                     try {
-                        val delay = max(0L, 15L * 60L * 1000L)
+                        val delay = 15 * 60 * 1000L
                         Scheduling.enqueueOnce(context, delay)
                     } finally {
                         pendingResult.finish()
