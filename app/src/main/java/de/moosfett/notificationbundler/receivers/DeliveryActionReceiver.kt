@@ -14,7 +14,11 @@ class DeliveryActionReceiver : BroadcastReceiver() {
             ACTION_DELIVER_NOW -> {
                 // Enqueue an immediate run
                 val req = OneTimeWorkRequestBuilder<DeliveryWorker>().build()
-                WorkManager.getInstance(context).enqueue(req)
+                WorkManager.getInstance(context).enqueueUniqueWork(
+                    "delivery",
+                    ExistingWorkPolicy.KEEP,
+                    req
+                )
             }
             ACTION_SNOOZE_15M -> {
                 // Replace any existing with a new one in 15m
