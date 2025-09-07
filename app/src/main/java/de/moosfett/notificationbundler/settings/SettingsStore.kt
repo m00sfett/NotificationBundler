@@ -1,7 +1,9 @@
 package de.moosfett.notificationbundler.settings
 
 import android.content.Context
+import androidx.datastore.core.DataMigration
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -9,13 +11,44 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore by preferencesDataStore(name = "settings")
+private val Context.dataStore by preferencesDataStore(
+    name = "settings",
+    produceMigrations = { _ ->
+        listOf(object : DataMigration<Preferences> {
+            // Convert legacy integer flags to boolean preferences
+            private val oldOngoing = intPreferencesKey("includeOngoing")
+            private val oldLow = intPreferencesKey("includeLowImportance")
+
+            override suspend fun shouldMigrate(currentData: Preferences): Boolean {
+                return currentData[oldOngoing] != null || currentData[oldLow] != null
+            }
+
+            override suspend fun migrate(currentData: Preferences): Preferences {
+                val mutable = currentData.toMutablePreferences()
+
+                currentData[oldOngoing]?.let {
+                    mutable[Keys.INCLUDE_ONGOING] = it == 1
+                    mutable.remove(oldOngoing)
+                }
+
+                currentData[oldLow]?.let {
+                    mutable[Keys.INCLUDE_LOW_IMPORTANCE] = it == 1
+                    mutable.remove(oldLow)
+                }
+
+                return mutable
+            }
+
+            override suspend fun cleanUp() {}
+        })
+    }
+)
 
 object Keys {
     val TIMES = stringSetPreferencesKey("times") // set of "HH:mm" strings
     val RETENTION_DAYS = intPreferencesKey("retentionDays")
-    val INCLUDE_ONGOING = intPreferencesKey("includeOngoing") // 0/1
-    val INCLUDE_LOW_IMPORTANCE = intPreferencesKey("includeLowImportance") // 0/1
+    val INCLUDE_ONGOING = booleanPreferencesKey("includeOngoing")
+    val INCLUDE_LOW_IMPORTANCE = booleanPreferencesKey("includeLowImportance")
 }
 
 class SettingsStore(private val context: Context) {
@@ -41,16 +74,16 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun includeOngoing(): Boolean =
-        context.dataStore.data.map { (it[Keys.INCLUDE_ONGOING] ?: 1) == 1 }.first()
+        context.dataStore.data.map { it[Keys.INCLUDE_ONGOING] ?: true }.first()
 
     suspend fun setIncludeOngoing(include: Boolean) {
-        context.dataStore.edit { it[Keys.INCLUDE_ONGOING] = if (include) 1 else 0 }
+        context.dataStore.edit { it[Keys.INCLUDE_ONGOING] = include }
     }
 
     suspend fun includeLowImportance(): Boolean =
-        context.dataStore.data.map { (it[Keys.INCLUDE_LOW_IMPORTANCE] ?: 1) == 1 }.first()
+        context.dataStore.data.map { it[Keys.INCLUDE_LOW_IMPORTANCE] ?: true }.first()
 
     suspend fun setIncludeLowImportance(include: Boolean) {
-        context.dataStore.edit { it[Keys.INCLUDE_LOW_IMPORTANCE] = if (include) 1 else 0 }
+        context.dataStore.edit { it[Keys.INCLUDE_LOW_IMPORTANCE] = include }
     }
 }
