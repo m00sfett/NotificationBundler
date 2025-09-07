@@ -6,12 +6,16 @@ import android.content.Intent
 import androidx.work.*
 import de.moosfett.notificationbundler.work.DeliveryWorker
 import de.moosfett.notificationbundler.work.Scheduling
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlin.jvm.JvmOverloads
 
-class DeliveryActionReceiver : BroadcastReceiver() {
+class DeliveryActionReceiver @JvmOverloads constructor(
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -27,7 +31,7 @@ class DeliveryActionReceiver : BroadcastReceiver() {
             ACTION_SNOOZE_15M -> {
                 // Replace any existing with a new one in 15m
                 val pendingResult = goAsync()
-                val scope = CoroutineScope(Dispatchers.Default)
+                val scope = CoroutineScope(dispatcher)
                 scope.launch {
                     try {
                         val delay = 15 * 60 * 1000L
