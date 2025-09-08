@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
+import de.moosfett.notificationbundler.data.repo.DeliveryLogRepository
 import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
 import java.time.ZoneId
@@ -12,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWorker(appContext, params) {
     private val notifications = NotificationsRepository(appContext)
+    private val logs = DeliveryLogRepository(appContext)
     private val settings = SettingsStore(appContext)
 
     override suspend fun doWork(): Result {
@@ -34,12 +36,14 @@ class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWo
                 notifications.markDelivered(pending.map { it.id })
             }
 
-            // 5) Housekeeping: retention
+            // 5) Log the run
+            logs.insert(System.currentTimeMillis(), pending.size)
+            // 6) Housekeeping: retention
             val days = settings.retentionDays()
             val threshold = System.currentTimeMillis() - days * 24L * 60L * 60L * 1000L
             notifications.deleteOlderThan(threshold)
 
-            // 6) Reschedule next run
+            // 7) Reschedule next run
             rescheduleNext()
 
             return Result.success()
