@@ -20,13 +20,13 @@ class DeliveryActionReceiver @JvmOverloads constructor(
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_DELIVER_NOW -> {
-                // Enqueue an immediate run
+                // Enqueue an immediate run, replacing any pending work
                 val req = OneTimeWorkRequestBuilder<DeliveryWorker>()
                     .addTag("delivery")
                     .build()
                 WorkManager.getInstance(context).enqueueUniqueWork(
                     "delivery",
-                    ExistingWorkPolicy.KEEP,
+                    ExistingWorkPolicy.REPLACE,
                     req
                 )
             }
