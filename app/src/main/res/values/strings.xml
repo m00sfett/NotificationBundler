@@ -15,5 +15,7 @@
     <string name="retention_days">Aufbewahrung: %1$d Tage</string>
     <string name="listener_not_enabled">Benachrichtigungszugriff ist nicht aktiviert.</string>
     <string name="open_settings">Einstellungen öffnen</string>
+    <string name="notifications_not_allowed">Benachrichtigungen sind nicht erlaubt.</string>
+    <string name="grant_permission">Berechtigung erteilen</string>
     <string name="status_counters">Heute: %1$d erfasst • %2$d in Warteschlange • %3$d kritisch</string>
 </resources>
