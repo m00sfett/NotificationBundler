@@ -6,3 +6,4 @@ Tasks:
 - Add migrations (v2+).
 - Introduce DeliveryLog entity (timestamp, counts).
 - Optimize queries for large volumes.
+- Expand unit tests for retention logic.

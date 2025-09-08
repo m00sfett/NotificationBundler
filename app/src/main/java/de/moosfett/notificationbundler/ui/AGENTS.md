@@ -6,3 +6,4 @@ Tasks:
 - Flesh out each screen with state & events.
 - Add a preview UI to show the next batch.
 - Provide a package picker (labels via PackageManager) for filters.
+- Build full schedule and filter editor UI.
