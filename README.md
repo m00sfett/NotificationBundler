@@ -1,6 +1,10 @@
-# Notification Bundler (Android, Kotlin, Compose)
+# Notification Bundler
 
-**Summary (EN):** The app collects incoming notifications, stores them locally (Room), and delivers them bundled at user‑defined times (WorkManager). Critical messages can be forwarded immediately; bundled summaries offer actions to deliver now, snooze 15 minutes, or skip. All user‑visible text is German (strings.xml); code and comments are in English.
+---
+
+**ENGLISH**
+
+**Summary:** The app collects incoming notifications, stores them locally (Room), and delivers them bundled at user‑defined times (WorkManager). Critical messages can be forwarded immediately; bundled summaries offer actions to deliver now, snooze 15 minutes, or skip. All user‑visible text is German (strings.xml); code and comments are in English.
 
 ## Build
 - Android Studio Hedgehog / Iguana or newer
@@ -19,7 +23,10 @@ Open → start `app` as Run Configuration (grant permissions).
 - `ui/*` – minimal Compose screens.
 
 ---
-**Kurzfassung (DE):** App sammelt eingehende Benachrichtigungen, speichert sie lokal (Room) und liefert sie zu benutzerdefinierten Zeiten gebündelt aus (WorkManager). Kritische Nachrichten können sofort durchgereicht werden; die Zusammenfassung bietet Aktionen für Sofortzustellung, 15‑Minuten-Snooze oder Überspringen. Alle sichtbaren Texte sind Deutsch (strings.xml); Code & Kommentare sind Englisch.
+
+**DEUTSCH**
+
+**Kurzfassung:** App sammelt eingehende Benachrichtigungen, speichert sie lokal (Room) und liefert sie zu benutzerdefinierten Zeiten gebündelt aus (WorkManager). Kritische Nachrichten können sofort durchgereicht werden; die Zusammenfassung bietet Aktionen für Sofortzustellung, 15‑Minuten-Snooze oder Überspringen. Alle sichtbaren Texte sind Deutsch (strings.xml); Code & Kommentare sind Englisch.
 
 ## Build
 - Android Studio Hedgehog / Iguana oder neuer
