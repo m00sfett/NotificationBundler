@@ -1,4 +1,4 @@
-# Agent Brief — Filter Engine
+# AGENTS
 
 Goal: Simple, readable rule matching by package/channel/keyword with two actions: mark critical (passthrough) or exclude.
 
