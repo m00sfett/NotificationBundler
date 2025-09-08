@@ -35,4 +35,8 @@
     <string name="save">Speichern</string>
     <string name="remove">Entfernen</string>
     <string name="select_package">App wählen</string>
+    <string name="clear_log">Protokoll löschen</string>
+    <string name="clear_log_confirm">Protokoll wirklich löschen?</string>
+    <string name="no_log_entries">Keine Einträge im Protokoll</string>
+    <string name="log_count">%1$d Benachrichtigungen</string>
 </resources>
