@@ -76,6 +76,14 @@ class SettingsStore(private val context: Context) {
         }
     }
 
+    suspend fun removeTime(time: String) {
+        context.dataStore.edit { prefs ->
+            val s = prefs[Keys.TIMES]?.toMutableSet() ?: mutableSetOf()
+            s.remove(time)
+            prefs[Keys.TIMES] = s
+        }
+    }
+
     suspend fun retentionDays(): Int =
         context.dataStore.data.map { it[Keys.RETENTION_DAYS] ?: 30 }.first()
 
