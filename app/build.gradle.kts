@@ -66,6 +66,9 @@ dependencies {
   implementation("androidx.core:core-ktx:1.13.1")
   implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
 
+  // Material Design components
+  implementation("com.google.android.material:material:1.12.0")
+
   // Hilt (no hilt-work wiring yet to keep it simple)
   implementation("com.google.dagger:hilt-android:2.51.1")
   ksp("com.google.dagger:hilt-compiler:2.51.1")
