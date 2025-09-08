@@ -18,4 +18,5 @@
     <string name="notifications_not_allowed">Benachrichtigungen sind nicht erlaubt.</string>
     <string name="grant_permission">Berechtigung erteilen</string>
     <string name="status_counters">Heute: %1$d erfasst • %2$d in Warteschlange • %3$d kritisch</string>
+    <string name="no_pending_notifications">Keine Benachrichtigungen in Warteschlange</string>
 </resources>
