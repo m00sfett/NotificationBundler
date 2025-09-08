@@ -1,4 +1,4 @@
-# Agent Brief — App Shell & Navigation
+# AGENTS
 
 Goal: Maintain a clean, single-activity Compose app with bottom navigation across six screens (Dashboard, Preview, Schedules, Filters, Log, Settings). Keep strings in German via resources; keep code/comments in English. Avoid business logic here; connect to ViewModels later.
 

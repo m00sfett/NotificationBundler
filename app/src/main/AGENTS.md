@@ -1,4 +1,4 @@
-# Agent Brief — Manifest & Permissions
+# AGENTS
 
 Goal: Keep the manifest minimal but correct. Ensure NotificationListenerService is declared with proper permission; ask for POST_NOTIFICATIONS at runtime on 33+; reschedule on BOOT_COMPLETED and TIMEZONE_CHANGED.
 
