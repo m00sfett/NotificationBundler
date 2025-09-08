@@ -1,6 +1,7 @@
 package de.moosfett.notificationbundler.settings
 
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,5 +24,14 @@ class SettingsStoreTest {
     @Test(expected = IllegalArgumentException::class)
     fun `addTime rejects invalid time`() = runBlocking {
         store.addTime("99:99")
+    }
+
+    @Test
+    fun `removeTime deletes time`() = runBlocking {
+        val t = "08:00"
+        store.addTime(t)
+        store.removeTime(t)
+        val times = store.getTimes()
+        assertFalse(times.contains(t))
     }
 }
