@@ -6,3 +6,4 @@ Tasks:
 - Wire action buttons: deliver now, snooze 15m, skip.
 - Respect `includeOngoing` and `includeLowImportance` toggles.
 - Add idempotency (run guard) to DeliveryWorker.
+- Refine Hilt integration for DeliveryWorker.

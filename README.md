@@ -18,13 +18,7 @@ Open → start `app` as Run Configuration (grant permissions).
 - `receivers/*` – BOOT_COMPLETED, TIMEZONE_CHANGED, actions (Deliver/Snooze/Skip).
 - `ui/*` – minimal Compose screens.
 
-## TODO / Next Steps
-- Full UI for schedule/filter editor.
-- Expand unit tests (filter engine, retention).
-- Refine Hilt integration for worker/service.
-
 ---
-
 **Kurzfassung (DE):** App sammelt eingehende Benachrichtigungen, speichert sie lokal (Room) und liefert sie zu benutzerdefinierten Zeiten gebündelt aus (WorkManager). Kritische Nachrichten können sofort durchgereicht werden; die Zusammenfassung bietet Aktionen für Sofortzustellung, 15‑Minuten-Snooze oder Überspringen. Alle sichtbaren Texte sind Deutsch (strings.xml); Code & Kommentare sind Englisch.
 
 ## Build
@@ -42,8 +36,3 @@ Open → start `app` as Run Configuration (grant permissions).
 - `notifications/Notifier` – Kanal-Setup + Summary/Kritisch.
 - `receivers/*` – BOOT_COMPLETED, TIMEZONE_CHANGED, Aktionen (Sofort/Snooze/Überspringen).
 - `ui/*` – Compose-Screens (minimal).
-
-## TODO / Next Steps
-- Volle UI für Schedule/Filter-Editor.
-- Unit-Tests ausbauen (Filter Engine, Retention).
-- Hilt-Integration für Worker/Service verfeinern.

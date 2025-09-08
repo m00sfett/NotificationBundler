@@ -5,3 +5,4 @@ Goal: Keep the manifest minimal but correct. Ensure NotificationListenerService 
 Tasks:
 - Add `QUERY_ALL_PACKAGES` only if strictly needed.
 - Add explicit exported flags as required by targetSdk 35.
+- Refine Hilt integration for NotificationCollectorService.
