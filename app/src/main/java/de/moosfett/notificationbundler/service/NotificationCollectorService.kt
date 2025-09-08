@@ -3,6 +3,7 @@ package de.moosfett.notificationbundler.service
 import android.app.NotificationManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
@@ -15,6 +16,10 @@ import org.json.JSONObject
 
 class NotificationCollectorService : NotificationListenerService() {
 
+    companion object {
+        private const val TAG = "NotificationCollectorService"
+    }
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationsRepo: NotificationsRepository
     private lateinit var filtersRepo: FiltersRepository
@@ -24,9 +29,14 @@ class NotificationCollectorService : NotificationListenerService() {
 
     override fun onCreate() {
         super.onCreate()
-        notificationsRepo = NotificationsRepository(applicationContext)
-        filtersRepo = FiltersRepository(applicationContext)
-        settings = SettingsStore(applicationContext)
+        try {
+            notificationsRepo = NotificationsRepository(applicationContext)
+            filtersRepo = FiltersRepository(applicationContext)
+            settings = SettingsStore(applicationContext)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize repositories", e)
+            return
+        }
         notificationManager = getSystemService(NotificationManager::class.java)
         scope.launch {
             filtersRepo.observeAll().collect { rulesCache.value = it }
