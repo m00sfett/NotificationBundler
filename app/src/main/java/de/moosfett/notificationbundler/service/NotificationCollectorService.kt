@@ -12,6 +12,9 @@ import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import org.json.JSONObject
 
 class NotificationCollectorService : NotificationListenerService() {
@@ -26,6 +29,8 @@ class NotificationCollectorService : NotificationListenerService() {
     private lateinit var settings: SettingsStore
     private lateinit var notificationManager: NotificationManager
     private val rulesCache = MutableStateFlow<List<FilterRuleEntity>>(emptyList())
+    private lateinit var includeOngoingFlow: StateFlow<Boolean>
+    private lateinit var includeLowImportanceFlow: StateFlow<Boolean>
 
     override fun onCreate() {
         super.onCreate()
@@ -41,6 +46,8 @@ class NotificationCollectorService : NotificationListenerService() {
         scope.launch {
             filtersRepo.observeAll().collect { rulesCache.value = it }
         }
+        includeOngoingFlow = settings.includeOngoing().stateIn(scope, SharingStarted.Eagerly, true)
+        includeLowImportanceFlow = settings.includeLowImportance().stateIn(scope, SharingStarted.Eagerly, true)
     }
 
     override fun onDestroy() {
@@ -59,8 +66,8 @@ class NotificationCollectorService : NotificationListenerService() {
                 notificationManager.getNotificationChannel(id)?.importance
             } ?: NotificationManager.IMPORTANCE_DEFAULT
 
-            val includeOngoing = settings.includeOngoing()
-            val includeLowImportance = settings.includeLowImportance()
+            val includeOngoing = includeOngoingFlow.value
+            val includeLowImportance = includeLowImportanceFlow.value
 
             if (!includeOngoing && isOngoing) return@launch
             if (!includeLowImportance &&
