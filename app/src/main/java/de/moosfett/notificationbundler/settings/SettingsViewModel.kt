@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -29,8 +30,8 @@ class SettingsViewModel(private val store: SettingsStore) : ViewModel() {
     init {
         viewModelScope.launch {
             _state.value = SettingsUiState(
-                includeOngoing = store.includeOngoing(),
-                includeLowImportance = store.includeLowImportance(),
+                includeOngoing = store.includeOngoing.first(),
+                includeLowImportance = store.includeLowImportance.first(),
                 retentionDays = store.retentionDays(),
             )
         }

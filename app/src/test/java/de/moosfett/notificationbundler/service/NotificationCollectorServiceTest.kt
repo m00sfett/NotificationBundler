@@ -11,6 +11,7 @@ import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -26,20 +27,24 @@ class NotificationCollectorServiceTest {
     private val filtersRepo = mock(FiltersRepository::class.java)
     private val settings = mock(SettingsStore::class.java)
     private val notificationManager = mock(NotificationManager::class.java)
+    private val includeOngoingFlow = MutableStateFlow(true)
+    private val includeLowImportanceFlow = MutableStateFlow(true)
 
     @Before
     fun setup() {
         setField("scope", CoroutineScope(Dispatchers.Unconfined))
         setField("notificationsRepo", notificationsRepo)
         setField("filtersRepo", filtersRepo)
-        setField("settings", settings)
         setField("notificationManager", notificationManager)
+        setField("includeOngoingFlow", includeOngoingFlow)
+        setField("includeLowImportanceFlow", includeLowImportanceFlow)
+        setField("settings", settings)
     }
 
     @Test
     fun ongoingNotificationSkippedWhenDisabled() = runBlocking {
-        Mockito.`when`(settings.includeOngoing()).thenReturn(false)
-        Mockito.`when`(settings.includeLowImportance()).thenReturn(true)
+        includeOngoingFlow.value = false
+        includeLowImportanceFlow.value = true
 
         val sbn = mockSbn(isOngoing = true, importance = NotificationManager.IMPORTANCE_DEFAULT)
 
@@ -50,8 +55,8 @@ class NotificationCollectorServiceTest {
 
     @Test
     fun lowImportanceNotificationSkippedWhenDisabled() = runBlocking {
-        Mockito.`when`(settings.includeOngoing()).thenReturn(true)
-        Mockito.`when`(settings.includeLowImportance()).thenReturn(false)
+        includeOngoingFlow.value = true
+        includeLowImportanceFlow.value = false
 
         val sbn = mockSbn(isOngoing = false, importance = NotificationManager.IMPORTANCE_LOW)
 
