@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -97,6 +98,18 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = stringResource(id = R.string.handling_active))
+                    Switch(
+                        checked = state.handlingActive,
+                        onCheckedChange = { onEvent(DashboardEvent.ToggleHandling(it)) }
+                    )
+                }
+                Spacer(Modifier.height(24.dp))
                 Text(
                     text = stringResource(id = R.string.next_delivery_at, state.nextDeliveryTime),
                     style = MaterialTheme.typography.headlineSmall
@@ -130,6 +143,16 @@ fun DashboardScreen(
                     ),
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Spacer(Modifier.height(12.dp))
+                if (state.learningCount > 0) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.learning_summary,
+                            state.learningCount
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
@@ -140,7 +163,9 @@ data class DashboardState(
     val nextDeliveryTime: String = "--:--",
     val todayCount: Int = 0,
     val pendingCount: Int = 0,
-    val criticalCount: Int = 0
+    val criticalCount: Int = 0,
+    val handlingActive: Boolean = true,
+    val learningCount: Int = 0,
 )
 
 /**
@@ -152,4 +177,5 @@ sealed interface DashboardEvent {
     data object Snooze15m : DashboardEvent
     data object Skip : DashboardEvent
     data object PostNotificationsGranted : DashboardEvent
+    data class ToggleHandling(val enabled: Boolean) : DashboardEvent
 }

@@ -18,6 +18,8 @@ data class SettingsUiState(
     val includeOngoing: Boolean = true,
     val includeLowImportance: Boolean = true,
     val retentionDays: Int = 30,
+    val logActive: Boolean = false,
+    val learningActive: Boolean = false,
 )
 
 /**
@@ -37,6 +39,8 @@ class SettingsViewModel(
                 includeOngoing = store.includeOngoing(),
                 includeLowImportance = store.includeLowImportance(),
                 retentionDays = store.retentionDays(),
+                logActive = store.logActive(),
+                learningActive = store.learningActive(),
             )
         }
     }
@@ -63,6 +67,16 @@ class SettingsViewModel(
             store.setRetentionDays(days)
             scheduleNextDelivery(store, WorkManager.getInstance(context))
         }
+    }
+
+    fun setLogActive(active: Boolean) {
+        _state.update { it.copy(logActive = active) }
+        viewModelScope.launch { store.setLogActive(active) }
+    }
+
+    fun setLearningActive(active: Boolean) {
+        _state.update { it.copy(learningActive = active) }
+        viewModelScope.launch { store.setLearningActive(active) }
     }
 }
 
