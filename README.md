@@ -1,7 +1,7 @@
 # Notification Bundler
 v0.3.1
 
-**Summary:** The app collects incoming notifications, stores them locally (Room), and delivers them bundled at user‑defined times (WorkManager). Critical messages can be forwarded immediately; bundled summaries offer actions to deliver now, snooze 15 minutes, or skip. All user‑visible text is German (strings.xml); code and comments are in English.
+**Summary:** The app collects incoming notifications, stores them locally (Room), and delivers them bundled at user‑defined times (WorkManager). Critical messages can be forwarded immediately; bundled summaries offer actions to deliver now, snooze 15 minutes, or skip.
 
 ## Build
 - Android Studio Hedgehog / Iguana or newer
