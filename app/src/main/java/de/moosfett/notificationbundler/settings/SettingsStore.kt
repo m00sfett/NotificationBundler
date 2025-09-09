@@ -8,11 +8,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private val Context.dataStore by preferencesDataStore(
     name = "settings",
@@ -54,7 +57,10 @@ object Keys {
     val INCLUDE_LOW_IMPORTANCE = booleanPreferencesKey("includeLowImportance")
 }
 
-class SettingsStore(private val context: Context) {
+@Singleton
+class SettingsStore @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     suspend fun getTimes(): List<String> {
         val set = context.dataStore.data.map { it[Keys.TIMES] ?: emptySet() }.first()

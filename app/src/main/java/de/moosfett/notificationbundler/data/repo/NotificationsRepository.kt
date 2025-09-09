@@ -1,13 +1,19 @@
 package de.moosfett.notificationbundler.data.repo
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import de.moosfett.notificationbundler.data.db.AppDatabase
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.ZoneId
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NotificationsRepository(private val appContext: Context) {
+@Singleton
+class NotificationsRepository @Inject constructor(
+    @ApplicationContext private val appContext: Context
+) {
 
     private val db by lazy { AppDatabase.getInstance(appContext) }
 

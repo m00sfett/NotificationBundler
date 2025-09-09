@@ -73,6 +73,8 @@ dependencies {
   // Hilt (no hilt-work wiring yet to keep it simple)
   implementation("com.google.dagger:hilt-android:2.51.1")
   ksp("com.google.dagger:hilt-compiler:2.51.1")
+  testImplementation("com.google.dagger:hilt-android-testing:2.51.1")
+  kspTest("com.google.dagger:hilt-compiler:2.51.1")
 
   // Room + KSP
   implementation("androidx.room:room-runtime:2.6.1")

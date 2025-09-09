@@ -3,40 +3,30 @@ package de.moosfett.notificationbundler.service
 import android.app.NotificationManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.util.Log
+import dagger.hilt.android.AndroidEntryPoint
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
+import javax.inject.Inject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
 
+@AndroidEntryPoint
 class NotificationCollectorService : NotificationListenerService() {
 
-    companion object {
-        private const val TAG = "NotificationCollectorService"
-    }
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var notificationsRepo: NotificationsRepository
-    private lateinit var filtersRepo: FiltersRepository
-    private lateinit var settings: SettingsStore
+    @Inject lateinit var notificationsRepo: NotificationsRepository
+    @Inject lateinit var filtersRepo: FiltersRepository
+    @Inject lateinit var settings: SettingsStore
     private lateinit var notificationManager: NotificationManager
     private val rulesCache = MutableStateFlow<List<FilterRuleEntity>>(emptyList())
 
     override fun onCreate() {
         super.onCreate()
-        try {
-            notificationsRepo = NotificationsRepository(applicationContext)
-            filtersRepo = FiltersRepository(applicationContext)
-            settings = SettingsStore(applicationContext)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize repositories", e)
-            return
-        }
         notificationManager = getSystemService(NotificationManager::class.java)
         scope.launch {
             filtersRepo.observeAll().collect { rulesCache.value = it }
