@@ -1,20 +1,28 @@
 package de.moosfett.notificationbundler.work
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import de.moosfett.notificationbundler.data.repo.NotificationsRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import de.moosfett.notificationbundler.data.repo.DeliveryLogRepository
+import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
-class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWorker(appContext, params) {
-    private val notifications = NotificationsRepository(appContext)
-    private val logs = DeliveryLogRepository(appContext)
-    private val settings = SettingsStore(appContext)
+@HiltWorker
+class DeliveryWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted params: WorkerParameters,
+    private val notifications: NotificationsRepository,
+    private val logs: DeliveryLogRepository,
+    private val settings: SettingsStore,
+) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
         if (!running.compareAndSet(false, true)) return Result.retry()
@@ -57,7 +65,8 @@ class DeliveryWorker(appContext: Context, params: WorkerParameters): CoroutineWo
         val now = ZonedDateTime.now(ZoneId.systemDefault())
         val next = Scheduling.nextRun(now, times)
         val delay = next.toInstant().toEpochMilli() - System.currentTimeMillis()
-        Scheduling.enqueueOnce(applicationContext, delay)
+        val wm = WorkManager.getInstance(applicationContext)
+        Scheduling.enqueueOnce(wm, delay)
     }
 
     companion object {

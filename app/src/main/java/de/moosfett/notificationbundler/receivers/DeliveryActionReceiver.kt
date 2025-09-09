@@ -3,9 +3,13 @@ package de.moosfett.notificationbundler.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.work.*
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import dagger.hilt.android.AndroidEntryPoint
 import de.moosfett.notificationbundler.work.DeliveryWorker
 import de.moosfett.notificationbundler.work.Scheduling
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,9 +17,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmOverloads
 
+@AndroidEntryPoint
 class DeliveryActionReceiver @JvmOverloads constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : BroadcastReceiver() {
+    @Inject lateinit var workManager: WorkManager
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -24,7 +30,7 @@ class DeliveryActionReceiver @JvmOverloads constructor(
                 val req = OneTimeWorkRequestBuilder<DeliveryWorker>()
                     .addTag("delivery")
                     .build()
-                WorkManager.getInstance(context).enqueueUniqueWork(
+                workManager.enqueueUniqueWork(
                     "delivery",
                     ExistingWorkPolicy.KEEP,
                     req
@@ -37,7 +43,7 @@ class DeliveryActionReceiver @JvmOverloads constructor(
                 scope.launch {
                     try {
                         val delay = 15 * 60 * 1000L
-                        Scheduling.enqueueOnce(context, delay)
+                        Scheduling.enqueueOnce(workManager, delay)
                     } finally {
                         pendingResult.finish()
                     }

@@ -26,25 +26,25 @@ class DeliveryActionReceiverTest {
         val receiver = DeliveryActionReceiver()
         val context = mock(Context::class.java)
         val wm = mock(WorkManager::class.java)
-        Mockito.mockStatic(WorkManager::class.java).use { wmStatic ->
-            wmStatic.`when`<WorkManager> { WorkManager.getInstance(context) }.thenReturn(wm)
+        receiver.workManager = wm
 
-            receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_DELIVER_NOW))
+        receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_DELIVER_NOW))
 
-            verify(wm).enqueueUniqueWork(eq("delivery"), eq(ExistingWorkPolicy.KEEP), any(OneTimeWorkRequest::class.java))
-        }
+        verify(wm).enqueueUniqueWork(eq("delivery"), eq(ExistingWorkPolicy.KEEP), any(OneTimeWorkRequest::class.java))
     }
 
     @Test
     fun `snooze 15m schedules delayed work`() = runBlocking {
         val scheduler = TestCoroutineScheduler()
         val dispatcher = StandardTestDispatcher(scheduler)
+        val wm = mock(WorkManager::class.java)
         val receiver = DeliveryActionReceiver(dispatcher)
+        receiver.workManager = wm
         val context = mock(Context::class.java)
         Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
             receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SNOOZE_15M))
             scheduler.advanceUntilIdle()
-            schedStatic.verify { Scheduling.enqueueOnce(context, 15L * 60L * 1000L) }
+            schedStatic.verify { Scheduling.enqueueOnce(eq(wm), eq(15L * 60L * 1000L)) }
         }
     }
 
@@ -52,12 +52,12 @@ class DeliveryActionReceiverTest {
     fun `skip does nothing`() {
         val receiver = DeliveryActionReceiver()
         val context = mock(Context::class.java)
-        Mockito.mockStatic(WorkManager::class.java).use { wmStatic ->
-            Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
-                receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SKIP))
-                wmStatic.verifyNoInteractions()
-                schedStatic.verifyNoInteractions()
-            }
+        val wm = mock(WorkManager::class.java)
+        receiver.workManager = wm
+        Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
+            receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SKIP))
+            Mockito.verifyNoInteractions(wm)
+            schedStatic.verifyNoInteractions()
         }
     }
 }
