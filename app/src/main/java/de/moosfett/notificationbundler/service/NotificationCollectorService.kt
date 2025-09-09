@@ -5,6 +5,8 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import dagger.hilt.android.AndroidEntryPoint
 import de.moosfett.notificationbundler.data.entity.FilterRuleEntity
+import de.moosfett.notificationbundler.data.entity.FilterEvaluationEntity
+import de.moosfett.notificationbundler.data.entity.PatternType
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
@@ -91,11 +93,27 @@ class NotificationCollectorService : NotificationListenerService() {
             val rules = rulesCache.value
             val match = matchRule(rules, entity)
 
-            when {
-                match?.isExcluded == true -> {
+            val decision = when {
+                match?.isExcluded == true -> "excluded"
+                match?.isCritical == true -> "critical"
+                else -> "allow"
+            }
+
+            filtersRepo.logEvaluation(
+                FilterEvaluationEntity(
+                    notificationKey = entity.key,
+                    packageName = entity.packageName,
+                    postTime = entity.postTime,
+                    ruleId = match?.id,
+                    decision = decision
+                )
+            )
+
+            when (decision) {
+                "excluded" -> {
                     // drop (do not insert)
                 }
-                match?.isCritical == true -> {
+                "critical" -> {
                     // mirror immediately
                     val sourceLabel = try {
                         val pm = packageManager
@@ -115,14 +133,31 @@ class NotificationCollectorService : NotificationListenerService() {
     }
 
     private fun matchRule(rules: List<FilterRuleEntity>, e: NotificationEntity): FilterRuleEntity? {
-        return rules.firstOrNull { r ->
+        val specific = rules.filter { !it.isDefault }
+        val match = specific.firstOrNull { r ->
             val pkgOk = r.packageName?.let { it == e.packageName } ?: true
             val channelOk = r.channelId?.let { it == e.channelId } ?: true
             val keywordOk = r.keyword?.let { kw ->
-                (e.title?.contains(kw, ignoreCase = true) == true) ||
-                (e.text?.contains(kw, ignoreCase = true) == true)
+                keywordMatches(kw, r.patternType, e)
             } ?: true
             pkgOk && channelOk && keywordOk
+        }
+        return match ?: rules.firstOrNull { it.isDefault && it.packageName == e.packageName }
+    }
+
+    private fun keywordMatches(kw: String, type: PatternType, e: NotificationEntity): Boolean {
+        val fields = listOf(e.title, e.text)
+        return when (type) {
+            PatternType.EXACT -> fields.any { it?.contains(kw, ignoreCase = true) == true }
+            PatternType.LIKE -> {
+                val regex = Regex(kw.replace("%", ".*"), RegexOption.IGNORE_CASE)
+                fields.any { it?.let { txt -> regex.containsMatchIn(txt) } == true }
+            }
+            PatternType.REGEX -> {
+                runCatching { Regex(kw, RegexOption.IGNORE_CASE) }.getOrNull()?.let { rx ->
+                    fields.any { it?.let { txt -> rx.containsMatchIn(txt) } == true }
+                } ?: false
+            }
         }
     }
 }
