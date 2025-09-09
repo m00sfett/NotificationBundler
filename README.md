@@ -1,5 +1,5 @@
 # Notification Bundler
-v0.2.2
+v0.2.3
 
 **Summary:** The app collects incoming notifications, stores them locally (Room), and delivers them bundled at user‑defined times (WorkManager). Critical messages can be forwarded immediately; bundled summaries offer actions to deliver now, snooze 15 minutes, or skip. All user‑visible text is German (strings.xml); code and comments are in English.
 
