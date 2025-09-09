@@ -58,6 +58,30 @@ fun SettingsScreen() {
                 onCheckedChange = { viewModel.setIncludeLowImportance(it) }
             )
         }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = stringResource(id = R.string.log_active))
+            Switch(
+                checked = state.logActive,
+                onCheckedChange = { viewModel.setLogActive(it) }
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = stringResource(id = R.string.learning_active))
+            Switch(
+                checked = state.learningActive,
+                onCheckedChange = { viewModel.setLearningActive(it) }
+            )
+        }
         Spacer(Modifier.height(24.dp))
         Text(text = stringResource(id = R.string.retention_days, state.retentionDays))
         Slider(

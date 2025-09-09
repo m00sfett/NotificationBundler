@@ -50,6 +50,11 @@ class DashboardViewModel(
                 }
         }
 
+        viewModelScope.launch {
+            settings.handlingActiveFlow.collect { active ->
+                _state.update { it.copy(handlingActive = active) }
+            }
+        }
         viewModelScope.launch { updateFromSettings(schedule = false) }
     }
 
@@ -64,6 +69,9 @@ class DashboardViewModel(
             }
             DashboardEvent.PostNotificationsGranted -> viewModelScope.launch {
                 updateFromSettings(schedule = true)
+            }
+            is DashboardEvent.ToggleHandling -> viewModelScope.launch {
+                settings.setHandlingActive(event.enabled)
             }
         }
     }

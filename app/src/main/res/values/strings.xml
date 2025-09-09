@@ -10,6 +10,9 @@
     <string name="filters">Filter</string>
     <string name="log">Protokoll</string>
     <string name="settings">Einstellungen</string>
+    <string name="handling_active">App aktiv</string>
+    <string name="log_active">Protokollierung aktiv</string>
+    <string name="learning_active">Lernen aktiv</string>
     <string name="include_ongoing">Laufende Benachrichtigungen einbeziehen</string>
     <string name="include_low_importance">Unwichtige Benachrichtigungen einbeziehen</string>
     <string name="retention_days">Aufbewahrung: %1$d Tage</string>
@@ -40,4 +43,5 @@
     <string name="clear_log_confirm">Protokoll wirklich löschen?</string>
     <string name="no_log_entries">Keine Einträge im Protokoll</string>
     <string name="log_count">%1$d Benachrichtigungen</string>
+    <string name="learning_summary">Unbekannt: %1$d Benachrichtigungen</string>
 </resources>

@@ -56,6 +56,9 @@ object Keys {
     val RETENTION_DAYS = intPreferencesKey("retentionDays")
     val INCLUDE_ONGOING = booleanPreferencesKey("includeOngoing")
     val INCLUDE_LOW_IMPORTANCE = booleanPreferencesKey("includeLowImportance")
+    val HANDLING_ACTIVE = booleanPreferencesKey("handlingActive")
+    val LOG_ACTIVE = booleanPreferencesKey("logActive")
+    val LEARNING_ACTIVE = booleanPreferencesKey("learningActive")
 }
 
 @Singleton
@@ -114,5 +117,32 @@ class SettingsStore @Inject constructor(
 
     suspend fun setIncludeLowImportance(include: Boolean) {
         context.dataStore.edit { it[Keys.INCLUDE_LOW_IMPORTANCE] = include }
+    }
+
+    val handlingActiveFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.HANDLING_ACTIVE] ?: true }
+
+    suspend fun handlingActive(): Boolean = handlingActiveFlow.first()
+
+    suspend fun setHandlingActive(active: Boolean) {
+        context.dataStore.edit { it[Keys.HANDLING_ACTIVE] = active }
+    }
+
+    val logActiveFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.LOG_ACTIVE] ?: false }
+
+    suspend fun logActive(): Boolean = logActiveFlow.first()
+
+    suspend fun setLogActive(active: Boolean) {
+        context.dataStore.edit { it[Keys.LOG_ACTIVE] = active }
+    }
+
+    val learningActiveFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.LEARNING_ACTIVE] ?: false }
+
+    suspend fun learningActive(): Boolean = learningActiveFlow.first()
+
+    suspend fun setLearningActive(active: Boolean) {
+        context.dataStore.edit { it[Keys.LEARNING_ACTIVE] = active }
     }
 }

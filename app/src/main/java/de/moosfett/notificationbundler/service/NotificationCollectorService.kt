@@ -10,7 +10,6 @@ import de.moosfett.notificationbundler.data.entity.PatternType
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
-import de.moosfett.notificationbundler.notifications.Notifier
 import de.moosfett.notificationbundler.settings.SettingsStore
 import javax.inject.Inject
 import kotlinx.coroutines.*
@@ -28,6 +27,9 @@ class NotificationCollectorService : NotificationListenerService() {
     private val rulesCache = MutableStateFlow<List<FilterRuleEntity>>(emptyList())
     private val includeOngoingSetting = MutableStateFlow(true)
     private val includeLowImportanceSetting = MutableStateFlow(true)
+    private val handlingActive = MutableStateFlow(true)
+    private val logActive = MutableStateFlow(false)
+    private val learningActive = MutableStateFlow(false)
 
     override fun onCreate() {
         super.onCreate()
@@ -37,6 +39,9 @@ class NotificationCollectorService : NotificationListenerService() {
         }
         scope.launch { settings.includeOngoingFlow.collect { includeOngoingSetting.value = it } }
         scope.launch { settings.includeLowImportanceFlow.collect { includeLowImportanceSetting.value = it } }
+        scope.launch { settings.handlingActiveFlow.collect { handlingActive.value = it } }
+        scope.launch { settings.logActiveFlow.collect { logActive.value = it } }
+        scope.launch { settings.learningActiveFlow.collect { learningActive.value = it } }
     }
 
     override fun onDestroy() {
@@ -49,6 +54,8 @@ class NotificationCollectorService : NotificationListenerService() {
         if (sbn.packageName == packageName) return
 
         scope.launch {
+            if (!handlingActive.value) return@launch
+
             val n = sbn.notification
             val isOngoing = sbn.isOngoing
             val importance = n.channelId?.let { id ->
@@ -94,39 +101,34 @@ class NotificationCollectorService : NotificationListenerService() {
             val match = matchRule(rules, entity)
 
             val decision = when {
-                match?.isExcluded == true -> "excluded"
-                match?.isCritical == true -> "critical"
-                else -> "allow"
+                match?.isCritical == true -> "whitelist"
+                match?.isExcluded == true -> "blacklist"
+                else -> "unlisted"
             }
 
-            filtersRepo.logEvaluation(
-                FilterEvaluationEntity(
-                    notificationKey = entity.key,
-                    packageName = entity.packageName,
-                    postTime = entity.postTime,
-                    ruleId = match?.id,
-                    decision = decision
+            val shouldLog = logActive.value || (learningActive.value && decision == "unlisted")
+            if (shouldLog) {
+                filtersRepo.logEvaluation(
+                    FilterEvaluationEntity(
+                        notificationKey = entity.key,
+                        packageName = entity.packageName,
+                        postTime = entity.postTime,
+                        ruleId = match?.id,
+                        decision = decision
+                    )
                 )
-            )
+            }
 
             when (decision) {
-                "excluded" -> {
-                    // drop (do not insert)
+                "blacklist" -> {
+                    cancelNotification(sbn.key)
+                    notificationsRepo.insert(entity)
                 }
-                "critical" -> {
-                    // mirror immediately
-                    val sourceLabel = try {
-                        val pm = packageManager
-                        val info = pm.getApplicationInfo(sbn.packageName, 0)
-                        pm.getApplicationLabel(info).toString()
-                    } catch (_: Exception) {
-                        sbn.packageName
-                    }
-                    Notifier.notifyCritical(applicationContext, title, text, sourceLabel)
-                    notificationsRepo.insert(entity.copy(critical = true, delivered = true))
+                "whitelist" -> {
+                    // pass through
                 }
                 else -> {
-                    notificationsRepo.insert(entity)
+                    // unlisted - pass through
                 }
             }
         }
