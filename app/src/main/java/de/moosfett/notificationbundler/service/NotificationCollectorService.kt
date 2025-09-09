@@ -24,6 +24,8 @@ class NotificationCollectorService : NotificationListenerService() {
     @Inject lateinit var settings: SettingsStore
     private lateinit var notificationManager: NotificationManager
     private val rulesCache = MutableStateFlow<List<FilterRuleEntity>>(emptyList())
+    private val includeOngoingSetting = MutableStateFlow(true)
+    private val includeLowImportanceSetting = MutableStateFlow(true)
 
     override fun onCreate() {
         super.onCreate()
@@ -31,6 +33,8 @@ class NotificationCollectorService : NotificationListenerService() {
         scope.launch {
             filtersRepo.observeAll().collect { rulesCache.value = it }
         }
+        scope.launch { settings.includeOngoingFlow.collect { includeOngoingSetting.value = it } }
+        scope.launch { settings.includeLowImportanceFlow.collect { includeLowImportanceSetting.value = it } }
     }
 
     override fun onDestroy() {
@@ -49,8 +53,8 @@ class NotificationCollectorService : NotificationListenerService() {
                 notificationManager.getNotificationChannel(id)?.importance
             } ?: NotificationManager.IMPORTANCE_DEFAULT
 
-            val includeOngoing = settings.includeOngoing()
-            val includeLowImportance = settings.includeLowImportance()
+            val includeOngoing = includeOngoingSetting.value
+            val includeLowImportance = includeLowImportanceSetting.value
 
             if (!includeOngoing && isOngoing) return@launch
             if (!includeLowImportance &&

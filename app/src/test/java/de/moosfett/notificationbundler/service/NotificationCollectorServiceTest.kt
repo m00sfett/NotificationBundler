@@ -43,11 +43,15 @@ class NotificationCollectorServiceTest {
 
     private lateinit var service: NotificationCollectorService
     private val notificationManager = mock(NotificationManager::class.java)
+    private val includeOngoingFlow = MutableStateFlow(true)
+    private val includeLowImportanceFlow = MutableStateFlow(true)
 
     @Before
     fun setup() {
         hiltRule.inject()
         Mockito.`when`(filtersRepo.observeAll()).thenReturn(MutableStateFlow(emptyList()))
+        Mockito.`when`(settings.includeOngoingFlow).thenReturn(includeOngoingFlow)
+        Mockito.`when`(settings.includeLowImportanceFlow).thenReturn(includeLowImportanceFlow)
         service = NotificationCollectorService()
         setField("scope", CoroutineScope(Dispatchers.Unconfined))
         service.onCreate()
@@ -56,8 +60,8 @@ class NotificationCollectorServiceTest {
 
     @Test
     fun ongoingNotificationSkippedWhenDisabled() = runBlocking {
-        Mockito.`when`(settings.includeOngoing()).thenReturn(false)
-        Mockito.`when`(settings.includeLowImportance()).thenReturn(true)
+        includeOngoingFlow.value = false
+        includeLowImportanceFlow.value = true
 
         val sbn = mockSbn(isOngoing = true, importance = NotificationManager.IMPORTANCE_DEFAULT)
 
@@ -68,8 +72,8 @@ class NotificationCollectorServiceTest {
 
     @Test
     fun lowImportanceNotificationSkippedWhenDisabled() = runBlocking {
-        Mockito.`when`(settings.includeOngoing()).thenReturn(true)
-        Mockito.`when`(settings.includeLowImportance()).thenReturn(false)
+        includeOngoingFlow.value = true
+        includeLowImportanceFlow.value = false
 
         val sbn = mockSbn(isOngoing = false, importance = NotificationManager.IMPORTANCE_LOW)
 
