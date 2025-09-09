@@ -15,6 +15,9 @@ interface FiltersDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(rule: FilterRuleEntity): Long
 
+    @Query("SELECT * FROM filter_rules WHERE packageName = :pkg AND isDefault = 1 LIMIT 1")
+    suspend fun defaultForPackage(pkg: String): FilterRuleEntity?
+
     @Delete
     suspend fun delete(rule: FilterRuleEntity)
 }
