@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalTime
@@ -97,15 +98,19 @@ class SettingsStore @Inject constructor(
         context.dataStore.edit { it[Keys.RETENTION_DAYS] = days }
     }
 
-    suspend fun includeOngoing(): Boolean =
-        context.dataStore.data.map { it[Keys.INCLUDE_ONGOING] ?: true }.first()
+    val includeOngoingFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.INCLUDE_ONGOING] ?: true }
+
+    suspend fun includeOngoing(): Boolean = includeOngoingFlow.first()
 
     suspend fun setIncludeOngoing(include: Boolean) {
         context.dataStore.edit { it[Keys.INCLUDE_ONGOING] = include }
     }
 
-    suspend fun includeLowImportance(): Boolean =
-        context.dataStore.data.map { it[Keys.INCLUDE_LOW_IMPORTANCE] ?: true }.first()
+    val includeLowImportanceFlow: Flow<Boolean> =
+        context.dataStore.data.map { it[Keys.INCLUDE_LOW_IMPORTANCE] ?: true }
+
+    suspend fun includeLowImportance(): Boolean = includeLowImportanceFlow.first()
 
     suspend fun setIncludeLowImportance(include: Boolean) {
         context.dataStore.edit { it[Keys.INCLUDE_LOW_IMPORTANCE] = include }
