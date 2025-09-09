@@ -1,8 +1,15 @@
 package de.moosfett.notificationbundler
 
 import android.app.Application
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.await
 import de.moosfett.notificationbundler.notifications.Notifier
+import de.moosfett.notificationbundler.receivers.scheduleNextDelivery
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class NotificationBundlerApp : Application() {
@@ -10,5 +17,19 @@ class NotificationBundlerApp : Application() {
         super.onCreate()
         // Ensure notification channels exist at startup.
         Notifier.ensureChannels(this)
+        CoroutineScope(Dispatchers.Default).launch {
+            val wm = WorkManager.getInstance(this@NotificationBundlerApp)
+            val existing = try {
+                wm.getWorkInfosForUniqueWork("delivery").await()
+            } catch (_: Exception) {
+                emptyList()
+            }
+            val hasQueued = existing.any {
+                it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING
+            }
+            if (!hasQueued) {
+                scheduleNextDelivery(this@NotificationBundlerApp)
+            }
+        }
     }
 }
