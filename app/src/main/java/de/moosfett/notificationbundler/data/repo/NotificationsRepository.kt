@@ -21,7 +21,13 @@ class NotificationsRepository @Inject constructor(
 
     suspend fun pending(): List<NotificationEntity> = db.notifications().pending()
 
+    fun pendingCount(): Flow<Int> = db.notifications().pendingCount()
+
+    fun criticalCount(): Flow<Int> = db.notifications().criticalCount()
+
     suspend fun markDelivered(ids: List<Long>) = db.notifications().markDelivered(ids)
+
+    suspend fun markSkipped(ids: List<Long>) = db.notifications().markSkipped(ids)
 
     suspend fun deleteOlderThan(threshold: Long) = db.notifications().deleteOlderThan(threshold)
 

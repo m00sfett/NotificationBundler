@@ -4,13 +4,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import de.moosfett.notificationbundler.ui.DashboardViewModel
+import de.moosfett.notificationbundler.ui.DashboardViewModelFactory
+import de.moosfett.notificationbundler.ui.PreviewViewModel
+import de.moosfett.notificationbundler.ui.PreviewViewModelFactory
 import de.moosfett.notificationbundler.ui.screens.*
 
 sealed class Dest(val route: String, val labelRes: Int) {
@@ -45,8 +52,18 @@ fun AppNav() {
         }
     ) { padding ->
         NavHost(navController = nav, startDestination = Dest.Dashboard.route, modifier = Modifier.padding(padding)) {
-            composable(Dest.Dashboard.route) { DashboardScreen() }
-            composable(Dest.Preview.route) { PreviewScreen() }
+            composable(Dest.Dashboard.route) {
+                val context = LocalContext.current
+                val vm: DashboardViewModel = viewModel(factory = DashboardViewModelFactory(context))
+                val state by vm.state.collectAsState()
+                DashboardScreen(state = state, onEvent = vm::onEvent)
+            }
+            composable(Dest.Preview.route) {
+                val context = LocalContext.current
+                val vm: PreviewViewModel = viewModel(factory = PreviewViewModelFactory(context))
+                val state by vm.state.collectAsState()
+                PreviewScreen(state = state, onEvent = vm::onEvent)
+            }
             composable(Dest.Schedules.route) { SchedulesScreen() }
             composable(Dest.Filters.route) { FiltersScreen() }
             composable(Dest.Log.route) { LogScreen() }
