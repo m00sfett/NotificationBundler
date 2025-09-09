@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import de.moosfett.notificationbundler.receivers.scheduleNextDelivery
 import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,7 @@ class SchedulesViewModel(
         val time = String.format("%02d:%02d", hour, minute)
         viewModelScope.launch {
             store.addTime(time)
-            scheduleNextDelivery(context)
+            scheduleNextDelivery(store, WorkManager.getInstance(context))
             _state.update { it.copy(times = store.getTimes()) }
         }
     }
@@ -44,7 +45,7 @@ class SchedulesViewModel(
     fun removeTime(time: String) {
         viewModelScope.launch {
             store.removeTime(time)
-            scheduleNextDelivery(context)
+            scheduleNextDelivery(store, WorkManager.getInstance(context))
             _state.update { it.copy(times = store.getTimes()) }
         }
     }

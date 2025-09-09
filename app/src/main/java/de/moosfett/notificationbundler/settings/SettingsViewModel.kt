@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import de.moosfett.notificationbundler.receivers.scheduleNextDelivery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +45,7 @@ class SettingsViewModel(
         _state.update { it.copy(includeOngoing = include) }
         viewModelScope.launch {
             store.setIncludeOngoing(include)
-            scheduleNextDelivery(context)
+            scheduleNextDelivery(store, WorkManager.getInstance(context))
         }
     }
 
@@ -52,7 +53,7 @@ class SettingsViewModel(
         _state.update { it.copy(includeLowImportance = include) }
         viewModelScope.launch {
             store.setIncludeLowImportance(include)
-            scheduleNextDelivery(context)
+            scheduleNextDelivery(store, WorkManager.getInstance(context))
         }
     }
 
@@ -60,7 +61,7 @@ class SettingsViewModel(
         _state.update { it.copy(retentionDays = days) }
         viewModelScope.launch {
             store.setRetentionDays(days)
-            scheduleNextDelivery(context)
+            scheduleNextDelivery(store, WorkManager.getInstance(context))
         }
     }
 }

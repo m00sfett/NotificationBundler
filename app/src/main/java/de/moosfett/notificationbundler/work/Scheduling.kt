@@ -1,6 +1,5 @@
 package de.moosfett.notificationbundler.work
 
-import android.content.Context
 import androidx.work.*
 import androidx.work.await
 import java.time.*
@@ -25,9 +24,8 @@ object Scheduling {
         return ZonedDateTime.of(today.plusDays(1), parsed.first(), zone)
     }
 
-    suspend fun enqueueOnce(context: Context, delayMillis: Long) {
-        val wm = WorkManager.getInstance(context)
-        val existing = try { wm.getWorkInfosByTag(TAG).await() } catch (_: Exception) { emptyList() }
+    suspend fun enqueueOnce(workManager: WorkManager, delayMillis: Long) {
+        val existing = try { workManager.getWorkInfosByTag(TAG).await() } catch (_: Exception) { emptyList() }
         val hasRunning = existing.any { it.state == WorkInfo.State.RUNNING }
         if (hasRunning) return
 
@@ -37,7 +35,7 @@ object Scheduling {
             .setConstraints(Constraints.NONE)
             .addTag(TAG)
             .build()
-        wm.enqueueUniqueWork(
+        workManager.enqueueUniqueWork(
             "delivery",
             ExistingWorkPolicy.REPLACE,
             req
