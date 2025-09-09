@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import de.moosfett.notificationbundler.receivers.scheduleNextDelivery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -21,7 +22,10 @@ data class SettingsUiState(
 /**
  * Simple ViewModel that proxies the [SettingsStore].
  */
-class SettingsViewModel(private val store: SettingsStore) : ViewModel() {
+class SettingsViewModel(
+    private val context: Context,
+    private val store: SettingsStore,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsUiState())
     val state: StateFlow<SettingsUiState> = _state
@@ -38,17 +42,26 @@ class SettingsViewModel(private val store: SettingsStore) : ViewModel() {
 
     fun setIncludeOngoing(include: Boolean) {
         _state.update { it.copy(includeOngoing = include) }
-        viewModelScope.launch { store.setIncludeOngoing(include) }
+        viewModelScope.launch {
+            store.setIncludeOngoing(include)
+            scheduleNextDelivery(context)
+        }
     }
 
     fun setIncludeLowImportance(include: Boolean) {
         _state.update { it.copy(includeLowImportance = include) }
-        viewModelScope.launch { store.setIncludeLowImportance(include) }
+        viewModelScope.launch {
+            store.setIncludeLowImportance(include)
+            scheduleNextDelivery(context)
+        }
     }
 
     fun setRetentionDays(days: Int) {
         _state.update { it.copy(retentionDays = days) }
-        viewModelScope.launch { store.setRetentionDays(days) }
+        viewModelScope.launch {
+            store.setRetentionDays(days)
+            scheduleNextDelivery(context)
+        }
     }
 }
 
@@ -59,7 +72,10 @@ class SettingsViewModelFactory(private val context: Context) : ViewModelProvider
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SettingsViewModel(SettingsStore(context.applicationContext)) as T
+            return SettingsViewModel(
+                context.applicationContext,
+                SettingsStore(context.applicationContext)
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
