@@ -5,34 +5,52 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import de.moosfett.notificationbundler.data.repo.FiltersRepository
 import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.settings.SettingsStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.robolectric.annotation.Config
 
+@HiltAndroidTest
+@Config(application = dagger.hilt.android.testing.HiltTestApplication::class)
 class NotificationCollectorServiceTest {
-    private val service = NotificationCollectorService()
-    private val notificationsRepo = mock(NotificationsRepository::class.java)
-    private val filtersRepo = mock(FiltersRepository::class.java)
-    private val settings = mock(SettingsStore::class.java)
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @BindValue @JvmField
+    val notificationsRepo: NotificationsRepository = mock(NotificationsRepository::class.java)
+
+    @BindValue @JvmField
+    val filtersRepo: FiltersRepository = mock(FiltersRepository::class.java)
+
+    @BindValue @JvmField
+    val settings: SettingsStore = mock(SettingsStore::class.java)
+
+    private lateinit var service: NotificationCollectorService
     private val notificationManager = mock(NotificationManager::class.java)
 
     @Before
     fun setup() {
+        hiltRule.inject()
+        Mockito.`when`(filtersRepo.observeAll()).thenReturn(MutableStateFlow(emptyList()))
+        service = NotificationCollectorService()
         setField("scope", CoroutineScope(Dispatchers.Unconfined))
-        setField("notificationsRepo", notificationsRepo)
-        setField("filtersRepo", filtersRepo)
-        setField("settings", settings)
+        service.onCreate()
         setField("notificationManager", notificationManager)
     }
 
