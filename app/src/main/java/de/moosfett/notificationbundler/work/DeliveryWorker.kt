@@ -30,10 +30,11 @@ class DeliveryWorker @AssistedInject constructor(
         try {
             // 1) Query pending notifications
             val pending = notifications.pending()
+            val deliverable = pending.filter { !it.skipped }
 
-            if (pending.isNotEmpty()) {
+            if (deliverable.isNotEmpty()) {
                 // 2) Build simple per-app lines
-                val lines = pending.groupBy { it.packageName }
+                val lines = deliverable.groupBy { it.packageName }
                     .map { (pkg, list) -> "${list.size} × $pkg" }
                     .sorted()
 
@@ -41,11 +42,11 @@ class DeliveryWorker @AssistedInject constructor(
                 Notifier.notifyBundledSummary(applicationContext, lines)
 
                 // 4) Mark delivered
-                notifications.markDelivered(pending.map { it.id })
+                notifications.markDelivered(deliverable.map { it.id })
             }
 
             // 5) Log the run
-            logs.insert(System.currentTimeMillis(), pending.size)
+            logs.insert(System.currentTimeMillis(), deliverable.size)
             // 6) Housekeeping: retention
             val days = settings.retentionDays()
             val threshold = System.currentTimeMillis() - days * 24L * 60L * 60L * 1000L

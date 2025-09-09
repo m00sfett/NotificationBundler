@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import de.moosfett.notificationbundler.R
+import android.widget.Toast
 
 /**
  * Dashboard showing quick status information and actions.
@@ -108,7 +109,14 @@ fun DashboardScreen(
                     Button(onClick = { onEvent(DashboardEvent.Snooze15m) }) {
                         Text(text = stringResource(id = R.string.snooze_15m))
                     }
-                    Button(onClick = { onEvent(DashboardEvent.Skip) }) {
+                    Button(onClick = {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.skip_confirmed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onEvent(DashboardEvent.Skip)
+                    }) {
                         Text(text = stringResource(id = R.string.skip))
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
+import de.moosfett.notificationbundler.data.repo.NotificationsRepository
 import de.moosfett.notificationbundler.work.DeliveryWorker
 import de.moosfett.notificationbundler.work.Scheduling
 import javax.inject.Inject
@@ -22,6 +23,7 @@ class DeliveryActionReceiver @JvmOverloads constructor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : BroadcastReceiver() {
     @Inject lateinit var workManager: WorkManager
+    @Inject lateinit var notifications: NotificationsRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -50,7 +52,17 @@ class DeliveryActionReceiver @JvmOverloads constructor(
                 }.invokeOnCompletion { scope.cancel() }
             }
             ACTION_SKIP -> {
-                // Do nothing; next regular run will happen
+                // Mark current pending notifications as skipped
+                val pendingResult = goAsync()
+                val scope = CoroutineScope(dispatcher)
+                scope.launch {
+                    try {
+                        val ids = notifications.pending().map { it.id }
+                        if (ids.isNotEmpty()) notifications.markSkipped(ids)
+                    } finally {
+                        pendingResult.finish()
+                    }
+                }.invokeOnCompletion { scope.cancel() }
             }
         }
     }

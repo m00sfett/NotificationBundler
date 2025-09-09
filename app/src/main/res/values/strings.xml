@@ -19,6 +19,7 @@
     <string name="grant_permission">Berechtigung erteilen</string>
     <string name="status_counters">Heute: %1$d erfasst • %2$d in Warteschlange • %3$d kritisch</string>
     <string name="no_pending_notifications">Keine Benachrichtigungen in Warteschlange</string>
+    <string name="skip_confirmed">Auslieferung übersprungen</string>
     <string name="add_time">Zeit hinzufügen</string>
     <string name="remove_time">Entfernen</string>
     <string name="no_times">Keine Zeiten definiert</string>
