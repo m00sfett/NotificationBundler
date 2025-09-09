@@ -6,6 +6,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import de.moosfett.notificationbundler.work.Scheduling
+import de.moosfett.notificationbundler.data.repo.NotificationsRepository
+import de.moosfett.notificationbundler.data.entity.NotificationEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -49,15 +51,37 @@ class DeliveryActionReceiverTest {
     }
 
     @Test
-    fun `skip does nothing`() {
-        val receiver = DeliveryActionReceiver()
-        val context = mock(Context::class.java)
+    fun `skip marks notifications as skipped`() = runBlocking {
+        val scheduler = TestCoroutineScheduler()
+        val dispatcher = StandardTestDispatcher(scheduler)
         val wm = mock(WorkManager::class.java)
+        val repo = mock(NotificationsRepository::class.java)
+        val receiver = DeliveryActionReceiver(dispatcher)
         receiver.workManager = wm
-        Mockito.mockStatic(Scheduling::class.java).use { schedStatic ->
-            receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SKIP))
-            Mockito.verifyNoInteractions(wm)
-            schedStatic.verifyNoInteractions()
-        }
+        receiver.notifications = repo
+        val context = mock(Context::class.java)
+        val entities = listOf(
+            NotificationEntity(
+                id = 1,
+                key = null,
+                packageName = "pkg",
+                channelId = null,
+                category = null,
+                title = null,
+                text = null,
+                postTime = 0,
+                groupKey = null,
+                isOngoing = false,
+                importance = null,
+                extrasJson = null,
+            )
+        )
+        Mockito.`when`(repo.pending()).thenReturn(entities)
+
+        receiver.onReceive(context, Intent(DeliveryActionReceiver.ACTION_SKIP))
+        scheduler.advanceUntilIdle()
+
+        verify(repo).markSkipped(listOf(1))
+        Mockito.verifyNoInteractions(wm)
     }
 }
